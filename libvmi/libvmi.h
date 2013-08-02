@@ -234,6 +234,7 @@ typedef uint64_t addr_t;
 
 /* type def for consistent pid_t usage */
 typedef int32_t vmi_pid_t;
+typedef int32_t vmi_state_t;
 
 /**
  * Generic representation of Unicode string to be used within libvmi

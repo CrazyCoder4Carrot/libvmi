@@ -45,9 +45,7 @@ status_t linux_init(vmi_instance_t vmi) {
         errprint("VMI_ERROR: os data already initialized, reinitializing\n");
         free(vmi->os_data);
     }
-
     vmi->os_data = safe_malloc(sizeof(struct linux_instance));
-    bzero(vmi->os_data, sizeof(struct linux_instance));
 
     g_hash_table_foreach(vmi->config, (GHFunc)linux_read_config_ghashtable_entries, vmi);
 
@@ -123,7 +121,17 @@ void linux_read_config_ghashtable_entries(char* key, gpointer value,
         goto _done;
     }
 
-    if (strncmp(key, "linux_name", CONFIG_STR_LENGTH) == 0) {
+	if (strncmp(key, "linux_state", CONFIG_STR_LENGTH) == 0) {
+        linux_instance->state_offset = *(int *)value;
+        goto _done;
+    }
+
+	if (strncmp(key, "linux_files", CONFIG_STR_LENGTH) == 0) {
+        linux_instance->files_offset = *(int *)value;
+        goto _done;
+    }
+    
+	if (strncmp(key, "linux_name", CONFIG_STR_LENGTH) == 0) {
         linux_instance->name_offset = *(int *)value;
         goto _done;
     }
@@ -137,15 +145,7 @@ void linux_read_config_ghashtable_entries(char* key, gpointer value,
         goto _done;
     }
 
-    if (strncmp(key, "name", CONFIG_STR_LENGTH) == 0) {
-        goto _done;
-    }
-
-    if (strncmp(key, "domid", CONFIG_STR_LENGTH) == 0) {
-        goto _done;
-    }
-
-    warnprint("Invalid offset %s given for Linux target\n", key);
+    errprint("VMI_WARNING: Invalid offset %s given for Linux target\n", key);
 
     _done: return;
 }

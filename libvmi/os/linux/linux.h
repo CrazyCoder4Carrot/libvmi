@@ -33,6 +33,10 @@ struct linux_instance {
 
     uint64_t pid_offset; /**< task_struct->pid */
 
+    uint64_t state_offset; /**< task_struct->states */
+
+    uint64_t files_offset; /**< task_struct->files */
+
     uint64_t pgd_offset; /**< mm_struct->pgd */
 
     uint64_t name_offset; /**< task_struct->comm */

@@ -268,6 +268,8 @@ int vmi_parse_config (const char *target_name)
 %token<str>    LINUX_TASKS
 %token<str>    LINUX_MM
 %token<str>    LINUX_PID
+%token<str>    LINUX_STATE
+%token<str>    LINUX_FILES
 %token<str>    LINUX_NAME
 %token<str>    LINUX_PGD
 %token<str>    LINUX_ADDR
@@ -323,6 +325,10 @@ assignment:
         linux_mm_assignment
         |
         linux_pid_assignment
+        |
+        linux_state_assignment
+        |
+        linux_files_assignment
         |
         linux_name_assignment
         |
@@ -383,6 +389,29 @@ linux_pid_assignment:
             free($3);
         }
         ;
+
+linux_state_assignment:
+        LINUX_STATE EQUALS NUM
+        {
+            uint64_t tmp = strtoull($3, NULL, 0);
+            uint64_t *tmp_ptr = malloc(sizeof(uint64_t*));
+            (*tmp_ptr) = tmp;
+            g_hash_table_insert(tmp_entry, $1, tmp_ptr);
+            free($3);
+        }
+        ;
+
+linux_files_assignment:
+        LINUX_FILES EQUALS NUM
+        {
+            uint64_t tmp = strtoull($3, NULL, 0);
+            uint64_t *tmp_ptr = malloc(sizeof(uint64_t*));
+            (*tmp_ptr) = tmp;
+            g_hash_table_insert(tmp_entry, $1, tmp_ptr);
+            free($3);
+        }
+        ;
+
 linux_name_assignment:
         LINUX_NAME EQUALS NUM
         {
