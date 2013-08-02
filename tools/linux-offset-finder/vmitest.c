@@ -33,7 +33,7 @@
 #include <linux/dcache.h>
 #include <linux/mount.h>
 
-#define MYMODNAME "FindOffsets "
+#define MYMODNAME "VMITest"
 
 static int my_init_module(
     void);
@@ -92,15 +92,21 @@ my_init_module(
                (unsigned int) filesOffset);
         printk(KERN_ALERT "    linux_pgd = 0x%x;\n",
                (unsigned int) pgdOffset);
+        printk(KERN_ALERT "    fdtable = 0x%x;\n",
+			   (unsigned long) (&(p->files->fdtab)) - (unsigned long) (p->files));
+        printk(KERN_ALERT "    max_fds = 0x%x;\n",
+			   (unsigned long) (&(p->files->fdtab.max_fds)) - (unsigned long) (p->files));
         printk(KERN_ALERT "}\n");
 
+        printk(KERN_ALERT "    fd_array = 0x%x;\n",
+               (unsigned int) (&(p->files->fd_array)));
+        printk(KERN_ALERT "    fd = 0x%x;\n",
+               (unsigned int) (p->files->fdt->fd));
 		printk(KERN_ALERT "current process-%d-%s opened file count is %d\n", 
 			   p->pid, p->comm, p->files->fdt->max_fds);	
 		if (p->files->fdt->max_fds >= 4) {
-			printk(KERN_ALERT "here1\n");
-			struct file *fp = p->files->fd_array[3];
-			printk(KERN_ALERT "here2\n");
-			printk(KERN_ALERT "process %d opened file 3 is:\nmntname-%s\ndname-%s\nmode-0x%x\ncount-%ld\nflags-0x%x\n", 
+			struct file *fp = p->files->fd_array[0];
+			printk(KERN_ALERT "process %d opened file 0 is:\nmntname-%s\ndname-%s\nmode-0x%x\ncount-%ld\nflags-0x%x\n", 
 			   p->pid, fp->f_path.mnt->mnt_root->d_name.name, 
 			   fp->f_path.dentry->d_name.name, fp->f_mode, fp->f_count.counter, fp->f_flags);	
 		}

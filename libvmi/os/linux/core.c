@@ -167,6 +167,10 @@ uint64_t linux_get_offset(vmi_instance_t vmi, const char* offset_name) {
         return linux_instance->pid_offset;
     } else if (strncmp(offset_name, "linux_name", max_length) == 0) {
         return linux_instance->name_offset;
+    } else if (strncmp(offset_name, "linux_state", max_length) == 0) {
+        return linux_instance->state_offset;
+    } else if (strncmp(offset_name, "linux_files", max_length) == 0) {
+        return linux_instance->files_offset;
     } else if (strncmp(offset_name, "linux_pgd", max_length) == 0) {
         return linux_instance->pgd_offset;
     } else {

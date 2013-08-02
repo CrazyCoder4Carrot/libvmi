@@ -36,21 +36,22 @@ int main (int argc, char **argv)
     vmi_instance_t vmi;
     unsigned char *memory = NULL;
     uint32_t offset;
-    addr_t list_head = 0, current_list_entry = 0, next_list_entry = 0;
-    addr_t current_process = 0;
+    addr_t list_head = 0, current_list_entry = 0, next_list_entry = 0, files_struct_list = 0, fdt_struct_list = 0;
+    addr_t current_process = 0, files_struct = 0, fdt_struct = 0;
     addr_t tmp_next = 0;
-    vmi_pid_t pid = 0;
+    vmi_pid_t pid, mypid = 0;
     vmi_state_t state = 0;
     unsigned long tasks_offset, pid_offset, name_offset, state_offset, files_offset;
     status_t status;
 
     /* this is the VM or file that we are looking at */
-    if (argc != 2) {
-        printf("Usage: %s <vmname>\n", argv[0]);
+    if (argc != 3) {
+        printf("Usage: %s <vmname> <pid>\n", argv[0]);
         return 1;
     } // if
 
     char *name = argv[1];
+    mypid = atoi(argv[2]);
 
     /* initialize the libvmi library */
     if (vmi_init(&vmi, VMI_AUTO | VMI_INIT_COMPLETE, name) == VMI_FAILURE) {
@@ -63,14 +64,10 @@ int main (int argc, char **argv)
         tasks_offset = vmi_get_offset(vmi, "linux_tasks");
         name_offset = vmi_get_offset(vmi, "linux_name");
         pid_offset = vmi_get_offset(vmi, "linux_pid");
-        state_offset = vmi_get_offset(vmi, "linux_state");
         files_offset = vmi_get_offset(vmi, "linux_files");
-		printf("Offset: tasks-0x%x name-0x%x pid-0x%x\n", tasks_offset, name_offset, pid_offset);
-
-        /* NOTE: 
-         *  name_offset is no longer hard-coded. Rather, it is now set 
-         *  via libvmi.conf.
-         */
+        state_offset = vmi_get_offset(vmi, "linux_state");
+		printf("Offset: tasks-0x%x name-0x%x pid-0x%x state-0x%x files-0x%x\n", 
+			   tasks_offset, name_offset, pid_offset, state_offset, files_offset);
     }
     else if (VMI_OS_WINDOWS == vmi_get_ostype(vmi)) {
         tasks_offset = vmi_get_offset(vmi, "win_tasks");
@@ -148,11 +145,21 @@ int main (int argc, char **argv)
         /* NOTE: _EPROCESS.UniqueProcessId is a really VOID*, but is never > 32 bits,
          * so this is safe enough for x64 Windows for example purposes */
         vmi_read_32_va(vmi, current_process + pid_offset, 0, &pid);
-        vmi_read_32_va(vmi, current_process + state_offset, 0, &state);
 
-        /* print out the current running process id */
-		if (state == 0) {
-        	printf("current running process id is [%d]\n", pid);
+		/* print out the current running process id */
+		if (pid == mypid) {
+        	char *procname = vmi_read_str_va(vmi, current_process + name_offset, 0);
+        	printf("process-%d-%s opened files information:\n", pid, procname);
+			files_struct_list = current_process + files_offset;
+			vmi_read_addr_va(vmi, files_struct_list, 0, &files_struct);
+			int count = 0;
+			vmi_read_32_va(vmi, files_struct, 0, &count);
+			printf("count is %d\n", count);
+			fdt_struct_list = files_struct + 0x10;
+			int max_fds = 0;
+			vmi_read_32_va(vmi, fdt_struct_list, 0, &max_fds);
+			printf("max_fds is %d\n", max_fds);
+        
 			break;
 		}
 
