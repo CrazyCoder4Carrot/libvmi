@@ -115,6 +115,7 @@ int main (int argc, char **argv)
          *  display as such.
          */
         current_process = vmi_translate_ksym2v(vmi, "init_task");
+        printf("init_task virtual address is 0x%x\n", (int)current_process);
     }
     else if (VMI_OS_WINDOWS == vmi_get_ostype(vmi)) {
 
